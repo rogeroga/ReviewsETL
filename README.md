@@ -1,6 +1,6 @@
 # ReviewsETL
 
-Project to load, parse and extra data from screen scraping files to a database to perform analytics.
+Project to load, parse and extract data from screen scraping files to a SQL database used to perform review analytics.
 
 This project contains the SQL scripts that drive the overall process. 
 
