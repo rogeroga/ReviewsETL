@@ -5,10 +5,16 @@
 Use [Sabio]
 Go
 
---
+-- Truncate table where the report results would be stored
+-- 
+Truncate table ReviewDifferences ;
+Truncate table MissingReviews ;
+Go
+
 -- Procedure to digg down into a particular school
 --
-Declare @FileTbl Table (Id int not null identity(1,1) primary key,
+Declare @FileTbl Table (
+		Id int not null identity(1,1) primary key,
 		SchoolId int,
 		SchoolName nvarchar(MAX),
 		FileLogId int,
@@ -49,12 +55,6 @@ Insert into @FileTbl
 Select @LoopCounter = Min(Id), 
 	   @MaxId = Max(Id)
 	From @FileTbl ;
-
-
--- Truncate table where the report results would be stored
--- 
-Truncate table ReviewDifferences ;
-Truncate table MissingReviews ;
 
 -- Main loop to process until the end of the table
 --

@@ -93,10 +93,6 @@ create table MissingReviews (DifferenceId int,
 		RateJobAssistance float,
 		RateOverallExperience float);
 
-alter table MissingReviews
-add constraint MissingReviews_ReviewDifferences_DifferenceId_fk
-foreign key (DifferenceId) References ReviewDifferences (DifferenceId)
-
 ----------
 -- Schools
 ----------
