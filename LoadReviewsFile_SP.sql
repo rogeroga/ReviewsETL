@@ -1,9 +1,10 @@
---
--- SQL script to define the stored procedure to load, parse and extract review input files 
---
+-- -----------------------------------------------------------------------------------------------
+-- Stored procedure to parse, extract and load scrape dev bootcamp school review input files 
+-- -----------------------------------------------------------------------------------------------
 
 Use [Sabio]
-Go
+GO
+
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -17,13 +18,12 @@ IF OBJECT_ID('LoadReviewsFile') IS NOT NULL
 Go
 
 -- ----------------------------------------------------------------------------------------
--- Description:	Procedure to load and parse an input file and extract 
--- the individual review records
+-- Procedure to load and parse an input file and extract the individual review records
 -- -----------------------------------------------------------------------------------------
 Create Procedure LoadReviewsFile ( @InputFile NVarChar(MAX), @ReceivedTime datetime)
 As 
 Begin
-	-- Check if the input file was already loaded
+	-- Check if the input filename was already loaded
 	--
 	IF EXISTS ( Select FileLogID From FileLog Where FileName = @InputFile )
 		RETURN 1
@@ -36,6 +36,7 @@ Begin
 	
 	-- Process a new file by creating a record in the FileLog table with status of no completed yet
 	-- Obtain the new FileLogId primary key	
+	--
 	Declare @OutputTbl Table (Id int)
 	
 	Insert into [dbo].[FileLog] ([FileName], [ProcessedDate], [Status], [ReceivedTime])
@@ -44,11 +45,15 @@ Begin
 
 	Select @NewFileLogId = Id From @OutputTbl 
 
+	-- Load the new file 
+	--
+	Print 'Loading File: ' + @InputFile
+
 	-- Dynamic SQL script to import the reviews file directly into the Stage table
 	--
 	Declare @Sql_String nvarchar(max) = 
-		N'INSERT INTO [dbo].[Stage] (FileLogId, SchoolId, SchoolName, Url, RatingCount, Rating, RatingContent, ReviewsHtml, CurrentUrl, Error)
-			SELECT ' + Convert(varchar(10), @NewFileLogId) + ',' + Convert(varchar(10), @SchoolId) + ', [SchoolName], [Url], [RatingCount], [Rating], [RatingContent], [ReviewsHtml], [CurrentUrl], [Error] 
+		N'INSERT INTO [dbo].[Stage] (FileLogId, SchoolName, Url, RatingCount, Rating, RatingContent, ReviewsHtml, CurrentUrl, Error)
+			SELECT ' + Convert(varchar(10), @NewFileLogId) + ', [SchoolName], [Url], [RatingCount], [Rating], [RatingContent], [ReviewsHtml], [CurrentUrl], [Error] 
 			FROM OPENROWSET (BULK ' + Quotename(@InputFile, nchar(39)) + ', SINGLE_CLOB) as j
 			CROSS APPLY OPENJSON(BulkColumn, ''$.rows'')
 			WITH ( 
@@ -60,11 +65,11 @@ Begin
 				ReviewsHtml varchar(MAX) ''$[6]'',
 				CurrentUrl varchar(MAX) ''$[7]'',
 				Error varchar(MAX) ''$[8]''
-			)'
+			)' ;
 	
 	-- Execute it to load the new input file into the Stage table and split Json content into columns
 	--
-	EXECUTE sp_executesql @Sql_String
+	EXECUTE sp_executesql @Sql_String ;
 
     If @@ERROR <> 0 GoTo ErrorHandler
 
@@ -75,9 +80,13 @@ Begin
 			@SchoolName nvarchar(MAX),
 			@ReviewHtml nvarchar(MAX);
 
-	Select @LoopCounter = Min(StageId), @MaxId = Max(StageId)
+	-- The JSON file that was just loaded before now we need to go through all the 
+	-- HTML reviews content and parse out the individual records 
+	--
+	Select @LoopCounter = Min(StageId), 
+		   @MaxId = Max(StageId)
 		From [dbo].[Stage]
-		Where FileLogId = @NewFileLogId
+		Where FileLogId = @NewFileLogId ;
  
 	WHILE ( @LoopCounter IS NOT NULL AND @LoopCounter <= @MaxId )
 	BEGIN
@@ -86,10 +95,12 @@ Begin
 		FROM [dbo].[Stage]
 		WHERE FileLogId = @NewFileLogId AND StageId = @LoopCounter
 
-		-- Check if the school already exists, if not insert it
-		-- 
-		SELECT @SchoolId = SchoolId FROM [dbo].[Schools] WHERE SchoolName = @SchoolName 
-		IF @SchoolId IS NULL
+		-- Get the school Id by matching the school name
+		-- if it doesn't exist insert the new school
+		--
+		IF NOT EXISTS (
+				Select 1 From [dbo].[Schools] Where UPPER(SchoolName) = UPPER(@SchoolName)
+			)
 			Begin
 				Insert into [dbo].[Schools] ([SchoolName])
 					Output Inserted.SchoolId into @OutputTbl(Id)
@@ -97,8 +108,15 @@ Begin
 
 				Select @SchoolId = Id From @OutputTbl
 			End
+		ELSE
+			Begin
+				Select @SchoolId = SchoolId 
+				From [dbo].[Schools] 
+				Where UPPER(SchoolName) = UPPER(@SchoolName)
+			End
 
-		-- Extract and parse the individual reviews
+		-- Extract and parse the individual reviews 
+		-- by calling a CLR procedure 
 		--
 		INSERT INTO [dbo].[ReviewsLog] (StageId, FileLogId, SchoolId, ReviewId, ReviewDate, ReviewTitle, ReviewerName, Review, Response, 
 						Campus, Course, DeepLinkPath, DeepLinkTarget, RateCurriculum, RateInstructors, RateJobAssistance, RateOverallExperience)

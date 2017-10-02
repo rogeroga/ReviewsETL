@@ -178,3 +178,62 @@ Declare @FName nvarchar(MAX) = N'C:\Users\roble\Google Drive\dexio\20170220_0406
 Select @FName as FileName ;
 GO
 
+select distinct(SchoolName)
+from [dbo].[Stage]
+order by SchoolName asc;
+
+select count(*) 
+from [dbo].[Schools] ;
+
+Declare @LoopCounter INT, 
+		@MaxId INT, 
+		@SchoolName nvarchar(MAX),
+		@ReviewHtml nvarchar(MAX),
+		@SchoolId int = 0,
+		@rowcount int;
+
+Set @SchoolName = 'Rogelio' ;
+
+
+INSERT INTO [dbo].[Schools] 
+(
+	SchoolName
+)
+SELECT TOP 1 -- important since we’re not constraining any records
+	SchoolName = @SchoolName
+FROM [dbo].[Schools]
+WHERE NOT EXISTS -- this replaces the if statement
+(
+	SELECT 1
+	FROM [dbo].[Schools] 
+	WHERE SchoolName = @SchoolName
+)
+
+SET @rowcount = @@ROWCOUNT -- return back the rows that got inserted
+
+SELECT @SchoolId = SchoolId 
+FROM [dbo].[Schools] 
+WHERE @rowcount = 0 AND UPPER(SchoolName) = UPPER(@SchoolName)
+
+
+GO
+
+
+SELECT @SchoolId = SchoolId FROM [dbo].[Schools] 
+WHERE UPPER(SchoolName) = UPPER(@SchoolName)
+
+		IF (@SchoolId IS NULL OR @SchoolId = 0) 
+			Begin
+/*				Insert into [dbo].[Schools] ([SchoolName])
+					Output Inserted.SchoolId into @OutputTbl(Id)
+					Values ( @SchoolName )
+
+				Select @SchoolId = Id From @OutputTbl
+*/
+				Print @SchoolId
+				Print 'is null or zero' 
+			End
+		Else
+			Print @SchoolId
+
+GO

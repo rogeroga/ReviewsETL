@@ -1,6 +1,6 @@
--- ----------------------------------------------------------------------------------------
--- Daily job to execute the procedure to load received files and extract the reviews in it
--- ----------------------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------------------------
+-- Daily job to execute the procedure to parse received files, extract and load the reviews in it
+-- -----------------------------------------------------------------------------------------------
 
 Use [Sabio]
 Go
@@ -10,9 +10,15 @@ Declare @FileTbl Table (Id int not null identity(1,1) primary key,
 	CreationTime DateTime not null,
 	LastWriteTime DateTime not null) ;
 
+-- Get all the filenames in the drop directory that have not been processed yet 
+--
 Insert into @FileTbl
-	Select * from GetFiles(N'C:\Users\roble\Google Drive\dexio') 
+  	Select * 
+	From GetFiles(N'C:\Users\roble\Google Drive\dexio') 
 	Where CHARINDEX(N'.json', Name) > 0
+		AND Name Not In (
+			SELECT FileName FROM dbo.FileLog Where Status = 1
+		)
 	Order by LastWriteTime asc ;
 
 Declare @LoopCounter int, 
@@ -23,6 +29,8 @@ Declare @LoopCounter int,
 Select @LoopCounter = Min(Id), @MaxId = Max(Id)
 	From @FileTbl
  
+-- Process the new files
+-- 
 WHILE ( @LoopCounter IS NOT NULL AND @LoopCounter <= @MaxId )
 BEGIN
 	SELECT @FileName = [Name],

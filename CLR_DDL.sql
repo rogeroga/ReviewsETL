@@ -1,8 +1,7 @@
---
+-- -----------------------------------------------------------------------------------------------
 -- DDL SQL script to manage the CLR functions used to load, extract 
 -- the dev bootcamp school reviews data
---
-
+-- -----------------------------------------------------------------------------------------------
 
 Use [Sabio]
 go
@@ -25,15 +24,15 @@ go
  
 -- Drop Assembly
 --
-drop assembly Sabio
-go
+Drop Assembly Sabio
+Go
 
 -- Install the CLR functions assembly and DLL dependencies
 --
-create assembly Sabio authorization dbo
-from 'C:\Users\roble\Documents\Sabio\BotClient\BotClient\bin\Release\BotClient.dll' 
-with permission_set = unsafe
-go
+Create Assembly Sabio Authorization dbo
+From 'C:\Users\roble\Documents\Sabio\BotClient\BotClient\bin\Release\BotClient.dll' 
+With permission_set = unsafe
+Go
 
 -------------
 -- GetFiles
@@ -47,18 +46,18 @@ GO
 
 -- Define external function
 --
-create function GetFiles(@dir nvarchar(1024))
-returns table (
+Create function GetFiles(@dir nvarchar(1024))
+Returns table (
 		Name nvarchar(MAX), 
 		CreationTime datetime, 
 		LastWriteTime datetime )
 as external name [Sabio].[BotClient.TableFunctions].[GetFiles]
-go
+Go
 
--- Test the CLR function
+-- Test the newly defined CLR function
 --
-select * from GetFiles('.') where LastWriteTime > '2017-06-01'
-go
+Select * from GetFiles('.') where LastWriteTime > '2017-06-01'
+Go
 
 
 -------------
@@ -73,8 +72,8 @@ GO
 
 -- Define external function
 --
-create function GetReviews(@reviewHtml nvarchar(MAX))
-returns table (
+Create function GetReviews(@reviewHtml nvarchar(MAX))
+Returns table (
             ReviewId integer,
 			ReviewDate smalldatetime, 
             ReviewTitle nvarchar(MAX),
@@ -92,24 +91,22 @@ returns table (
             RateJobAssistance float,
             RateOverallExperience float
 			)
-as external name [Sabio].[BotClient.TableFunctions].[GetReviews]
-go
+As external name [Sabio].[BotClient.TableFunctions].[GetReviews]
+Go
 
 
--- Test the CLR function
+-- Test the newly defined CLR function
 --
-select * from GetReviews('') 
-go
+Select * from GetReviews('') 
+Go
 
 
-declare @ReviewHtml nvarchar(MAX);
+Declare @ReviewHtml nvarchar(MAX);
 
-select TOP(1)
+Select TOP(1)
     @ReviewHtml = Input.[ReviewsHtml]
-from
+From
     [Sabio].[dbo].[Input] Input
 
-
-select * from GetReviews(@ReviewHtml);
-
-go
+Select * from GetReviews(@ReviewHtml);
+Go
