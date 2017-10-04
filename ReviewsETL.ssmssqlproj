@@ -67,6 +67,12 @@
           <AssociatedConnUserName />
           <FullPath>ScheduledJob.sql</FullPath>
         </FileNode>
+        <FileNode Name="SQLQuery13.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ROGELIO-PC:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ROGELIO-PC</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery13.sql</FullPath>
+        </FileNode>
         <FileNode Name="SQLQuery2.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ROGELIO-PC:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>ROGELIO-PC</AssociatedConnSrvName>

@@ -38,7 +38,8 @@ Create Table dbo.Stage (
 	RatingContent nvarchar(MAX),
 	ReviewsHtml nvarchar(MAX),
 	CurrentUrl nvarchar(MAX),
-	Error nvarchar(MAX) );
+	Error nvarchar(MAX),
+	LoadedReviews int );
 GO
 
 -- ============================================================================

@@ -30,14 +30,15 @@ Begin
 
 	-- Declare local variables
 	--
-	Declare @Result int
-	Declare @NewFileLogId int
-	Declare @SchoolId int = 0
+	Declare @Tmp int, 
+		@Result int,
+		@NewFileLogId int,
+		@SchoolId int = 0 ;
 	
 	-- Process a new file by creating a record in the FileLog table with status of no completed yet
 	-- Obtain the new FileLogId primary key	
 	--
-	Declare @OutputTbl Table (Id int)
+	Declare @OutputTbl Table (Id int) ;
 	
 	Insert into [dbo].[FileLog] ([FileName], [ProcessedDate], [Status], [ReceivedTime])
 		Output Inserted.FileLogId into @OutputTbl(Id)
@@ -80,6 +81,22 @@ Begin
 			@SchoolName nvarchar(MAX),
 			@ReviewHtml nvarchar(MAX);
 
+	Declare @ReviewsTbl Table (
+				ReviewId int NOT NULL,
+				ReviewDate smalldatetime NULL,
+				ReviewTitle nvarchar(max) NULL,
+				ReviewerName nvarchar(max) NULL,
+				Review nvarchar(max) NULL,
+				Response nvarchar(max) NULL,
+				Campus nvarchar(max) NULL,
+				Course nvarchar(max) NULL,
+				DeepLinkPath nvarchar(max) NULL,
+				DeepLinkTarget nvarchar(max) NULL,
+				RateCurriculum float NULL,
+				RateInstructors float NULL,
+				RateJobAssistance float NULL,
+				RateOverallExperience float NULL );
+
 	-- The JSON file that was just loaded before now we need to go through all the 
 	-- HTML reviews content and parse out the individual records 
 	--
@@ -88,12 +105,22 @@ Begin
 		From [dbo].[Stage]
 		Where FileLogId = @NewFileLogId ;
  
-	WHILE ( @LoopCounter IS NOT NULL AND @LoopCounter <= @MaxId )
-	BEGIN
-		SELECT @ReviewHtml = ReviewsHtml,
+	While ( @LoopCounter IS NOT NULL AND @LoopCounter <= @MaxId )
+	Begin
+
+		Select @ReviewHtml = ReviewsHtml,
 			   @SchoolName = SchoolName
-		FROM [dbo].[Stage]
-		WHERE FileLogId = @NewFileLogId AND StageId = @LoopCounter
+		From [dbo].[Stage]
+		Where FileLogId = @NewFileLogId 
+			AND StageId = @LoopCounter
+
+		-- Validate stage data, skip school creation if name is null
+		--
+		If ( @SchoolName IS NULL ) 
+			Begin
+				SET @LoopCounter = @LoopCounter + 1 ;
+				Continue ;
+			End
 
 		-- Get the school Id by matching the school name
 		-- if it doesn't exist insert the new school
@@ -108,7 +135,7 @@ Begin
 
 				Select @SchoolId = Id From @OutputTbl
 			End
-		ELSE
+		Else
 			Begin
 				Select @SchoolId = SchoolId 
 				From [dbo].[Schools] 
@@ -118,18 +145,40 @@ Begin
 		-- Extract and parse the individual reviews 
 		-- by calling a CLR procedure 
 		--
-		INSERT INTO [dbo].[ReviewsLog] (StageId, FileLogId, SchoolId, ReviewId, ReviewDate, ReviewTitle, ReviewerName, Review, Response, 
-						Campus, Course, DeepLinkPath, DeepLinkTarget, RateCurriculum, RateInstructors, RateJobAssistance, RateOverallExperience)
-			SELECT @LoopCounter, @NewFileLogId, @SchoolId, * FROM GetReviews(@ReviewHtml)
+		Delete From @ReviewsTbl ;
 
-		SET @LoopCounter = @LoopCounter + 1
-	END
+		Insert Into @ReviewsTbl
+			Select * FROM GetReviews(@ReviewHtml) ;
+
+		-- Scan and validate the reviews before inserting the data
+		-- Get the count to store it in the Stage table
+		-- 
+		Select @Tmp = ( Select Count(1) From @ReviewsTbl );
+
+		Update [dbo].[Stage]
+			Set LoadedReviews = @Tmp
+			Where FileLogId = @NewFileLogId 
+				AND StageId = @LoopCounter ;
+
+		If ( @Tmp > 0 )
+			Begin
+			-- Insert the review rows
+			--
+			Insert Into [dbo].[ReviewsLog] (StageId, FileLogId, SchoolId, ReviewId, ReviewDate, ReviewTitle, ReviewerName, Review, Response, 
+							Campus, Course, DeepLinkPath, DeepLinkTarget, RateCurriculum, RateInstructors, RateJobAssistance, RateOverallExperience)
+				Select @LoopCounter, @NewFileLogId, @SchoolId, * From @ReviewsTbl ;
+			End
+
+		SET @LoopCounter = @LoopCounter + 1 ;
+
+	End -- Main while loop
 
 	If @@ERROR <> 0 GoTo ErrorHandler
 
 	-- Set success status to the file just processed
 	--
-	Update [dbo].[FileLog] Set Status = 1 
+	Update [dbo].[FileLog] 
+		Set Status = 1 
 		Where FileLogId = @NewFileLogId
 
     Set NoCount OFF
