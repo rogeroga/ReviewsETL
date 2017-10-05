@@ -2,7 +2,7 @@
 -- Stored procedure to parse, extract and load scrape dev bootcamp school review input files 
 -- -----------------------------------------------------------------------------------------------
 
-Use [Sabio]
+Use [Outcomes]
 GO
 
 SET ANSI_NULLS ON
@@ -162,11 +162,19 @@ Begin
 
 		If ( @Tmp > 0 )
 			Begin
-			-- Insert the review rows
-			--
-			Insert Into [dbo].[ReviewsLog] (StageId, FileLogId, SchoolId, ReviewId, ReviewDate, ReviewTitle, ReviewerName, Review, Response, 
-							Campus, Course, DeepLinkPath, DeepLinkTarget, RateCurriculum, RateInstructors, RateJobAssistance, RateOverallExperience)
-				Select @LoopCounter, @NewFileLogId, @SchoolId, * From @ReviewsTbl ;
+				-- Insert the review rows
+				--
+				Insert Into [dbo].[ReviewsLog] (StageId, FileLogId, SchoolId, ReviewId, ReviewDate, ReviewTitle, ReviewerName, Review, Response, 
+								Campus, Course, DeepLinkPath, DeepLinkTarget, RateCurriculum, RateInstructors, RateJobAssistance, RateOverallExperience)
+					Select @LoopCounter, @NewFileLogId, @SchoolId, * From @ReviewsTbl ;
+
+				-- Update the number of reviews loaded 
+				-- 
+				Select @Tmp = @@ROWCOUNT;
+				Update [dbo].[Stage]
+					Set LoadedReviews = @Tmp
+					Where FileLogId = @NewFileLogId 
+						AND StageId = @LoopCounter ;				
 			End
 
 		SET @LoopCounter = @LoopCounter + 1 ;

@@ -2,18 +2,49 @@
 -- Tables and Index defintions for the analytics of dev bootcamp school reviews
 -- ============================================================================
 
-Use [Sabio]
+Use [Outcomes]
+GO
+
+-- ============================================================================
+-- Config
+-- ============================================================================
+IF OBJECT_ID('dbo.Config', 'U') IS NOT NULL
+  Drop Table dbo.Config ;
+GO
+
+Create Table dbo.Config (
+	Id int not null identity(1,1) primary key nonclustered,
+	ParameterName nvarchar(100) not null,
+	ParameterValue nvarchar(MAX) not null,
+	Enabled int not null);
+
+Alter Table dbo.Config
+  Add Constraint Unique_ParameterName Unique Nonclustered (ParameterName);
+
+INSERT INTO dbo.Config                        
+			(ParameterName, ParameterValue, Enabled)
+     VALUES
+           ('DEV_FILE_LOCATION',
+            'C:\Users\roble\Google Drive\dexio',
+            1);
+
+INSERT INTO dbo.Config
+           (ParameterName, ParameterValue, Enabled)
+     VALUES
+           ('PROD_FILE_LOCATION',
+            'C:\Users\DBDeveloper\Google Drive\WebBot',
+            1);
 GO
 
 -- ============================================================================
 -- FileLog
 -- ============================================================================
 IF OBJECT_ID('dbo.FileLog', 'U') IS NOT NULL
-  Drop Table dbo.FileLog
+  Drop Table dbo.FileLog ;
 GO
 
 Create Table dbo.FileLog (
-	FileLogId int not null identity(1,1) primary key,
+	FileLogId int not null identity(1,1) primary key nonclustered,
 	FileName nvarchar(MAX) not null,
 	ProcessedDate DateTime not null,
 	ReceivedTime DateTime not null,
@@ -24,11 +55,11 @@ GO
 -- Stage
 -- ============================================================================
 IF OBJECT_ID('dbo.Stage','U') IS NOT NULL
-  Drop Table dbo.Stage
+  Drop Table dbo.Stage ;
 GO
 
 Create Table dbo.Stage (
-	StageId int not null identity(1,1) primary key,
+	StageId int not null identity(1,1) primary key nonclustered,
 	FileLogId int not null,
 	SchoolName nvarchar(MAX),
 
@@ -39,14 +70,14 @@ Create Table dbo.Stage (
 	ReviewsHtml nvarchar(MAX),
 	CurrentUrl nvarchar(MAX),
 	Error nvarchar(MAX),
-	LoadedReviews int );
+	LoadedReviews int default 0);
 GO
 
 -- ============================================================================
 -- ReviewsLog
 -- ============================================================================
 IF OBJECT_ID('dbo.ReviewsLog','U') IS NOT NULL
-  Drop Table dbo.ReviewsLog
+  Drop Table dbo.ReviewsLog ;
 GO
 
 Create Table dbo.ReviewsLog (
@@ -72,7 +103,7 @@ Create Table dbo.ReviewsLog (
 	RateOverallExperience float );
 
 Alter Table dbo.ReviewsLog
-  Add Constraint Unique_ReviewId Unique Nonclustered (FileLogId, SchoolId, ReviewId)
+  Add Constraint Unique_ReviewId Unique Nonclustered (FileLogId, SchoolId, ReviewId);
 
 GO
 
@@ -91,12 +122,15 @@ GO
 -- Schools
 -- ============================================================================
 IF OBJECT_ID('dbo.Schools','U') IS NOT NULL
-  Drop Table dbo.Schools
+  Drop Table dbo.Schools ;
 GO
 
 Create Table dbo.Schools (
-	SchoolId int not null identity(1,1) primary key,
-	SchoolName nvarchar(MAX) );
+	SchoolId int not null identity(1,1) primary key nonclustered,
+	SchoolName nvarchar(100) );
+
+Alter Table dbo.Schools
+  Add Constraint Unique_SchoolName Unique Nonclustered (SchoolName);
 
 GO
 
@@ -104,10 +138,10 @@ GO
 -- ReviewDifferences
 -- ============================================================================
 IF OBJECT_ID('dbo.ReviewDifferences','U') IS NOT NULL
-  Drop Table dbo.ReviewDifferences
+  Drop Table dbo.ReviewDifferences ;
 GO
 
-Create Table ReviewDifferences (DifferenceId int not null identity(1,1) primary key,
+Create Table ReviewDifferences (DifferenceId int not null identity(1,1) primary key nonclustered,
 		SchoolId int,
 		FirstFileLogId int,
 		SecondFileLogId int,
@@ -119,7 +153,7 @@ GO
 -- MissingReviews
 -- ============================================================================
 IF OBJECT_ID('dbo.MissingReviews','U') IS NOT NULL
-  Drop Table dbo.MissingReviews
+  Drop Table dbo.MissingReviews ;
 GO
 
 Create Table dbo.MissingReviews (DifferenceId int,

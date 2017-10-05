@@ -2,7 +2,7 @@
 -- DDL Tests
 ----------
 
-Use Sabio
+Use [Outcomes]
 Go
 
 insert into FileLog(FileName,ProcessedDate,Status)

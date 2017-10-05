@@ -3,7 +3,7 @@
 -- the dev bootcamp school reviews data
 --
 
-Use [Sabio]
+Use [Outcomes]
 Go
 SET ANSI_NULLS ON
 GO
@@ -29,7 +29,6 @@ create table [dbo].[Input]
 )
 GO
 
-
 -------------------------
 -------------------------
 -- LOAD DATA
@@ -49,8 +48,6 @@ INSERT INTO [dbo].[Input]
 			Error varchar(200) '$[8]'
 		) 
 GO
-
-
 
 -- Insert Sabio Rows
 --
@@ -73,35 +70,17 @@ WHERE [SchoolName] = 'Sabio'
 GO
 
 
-Use [Sabio]
-go
-
-
-SELECT TOP (10) [SchoolName]
-      ,[Url]
-      ,[RatingCount]
-      ,[Rating]
-      ,[RatingContent]
-      ,[ReviewsHtml]
-      ,[CurrentUrl]
-      ,[Error]
-  FROM [Sabio].[dbo].[Input] 
-go
-
-
-
 declare @ReviewHtml nvarchar(MAX);
 
 select TOP(1)
     @ReviewHtml = Input.[ReviewsHtml]
 from
-    [Sabio].[dbo].[Input] Input
+    [Outcomes].[dbo].[Input] Input
 
 
 select * from GetReviews(@ReviewHtml);
 
 go
-
 
 
 SELECT [SchoolName], [Url], [RatingCount], [Rating], [RatingContent], [ReviewsHtml], [CurrentUrl], [Error] 
@@ -120,9 +99,6 @@ CROSS APPLY OPENJSON(BulkColumn, '$.rows')
 WHERE [SchoolName] = 'Sabio' 
 
 GO
-
-
-
 
 SELECT [SchoolName], [Url], [RatingCount], [Rating], [RatingContent], [ReviewsHtml], [CurrentUrl], [Error] 
 -- FROM OPENROWSET (BULK 'C:\Users\roble\Documents\Sabio\schools.json', SINGLE_CLOB) as j
@@ -172,8 +148,6 @@ Exec(@sql_string) ;
 
 GO
 
-
-
 Declare @FName nvarchar(MAX) = N'C:\Users\roble\Google Drive\dexio\20170220_0406_cr_schools_to_details_v1_daily_-_cr_schools_v1.json' ;
 Select @FName as FileName ;
 GO
@@ -215,7 +189,6 @@ SELECT @SchoolId = SchoolId
 FROM [dbo].[Schools] 
 WHERE @rowcount = 0 AND UPPER(SchoolName) = UPPER(@SchoolName)
 
-
 GO
 
 
@@ -237,3 +210,4 @@ WHERE UPPER(SchoolName) = UPPER(@SchoolName)
 			Print @SchoolId
 
 GO
+

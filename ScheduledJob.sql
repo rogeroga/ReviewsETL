@@ -2,7 +2,7 @@
 -- Daily job to execute the procedure to parse received files, extract and load the reviews in it
 -- -----------------------------------------------------------------------------------------------
 
-Use [Sabio]
+Use [Outcomes]
 Go
 
 Declare @FileTbl Table (Id int not null identity(1,1) primary key,
@@ -15,6 +15,8 @@ Declare @FileTbl Table (Id int not null identity(1,1) primary key,
 Insert into @FileTbl
   	Select * 
 	From GetFiles(N'C:\Users\roble\Google Drive\dexio') 
+
+-- 	From GetFiles(N'C:\Users\DBDeveloper\Google Drive\WebBot') 
 	Where CHARINDEX(N'.json', Name) > 0
 		AND Name Not In (
 			SELECT FileName FROM dbo.FileLog Where Status = 1

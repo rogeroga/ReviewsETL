@@ -2,7 +2,7 @@
 ---  Process all the files loaded so far and do an analysis of all the reviews per school
 -- =======================================================================================
 
-Use [Sabio]
+Use [Outcomes]
 Go
 
 -- Truncate tables where the report results would be stored
@@ -107,7 +107,7 @@ BEGIN
 							FOR XML PATH(''), TYPE
 						).value('.', 'nvarchar(max)') ;
 
-					Select @AddedIds = Reverse(Stuff(Reverse(@AddedIds), 1, 1, ''));
+					Select @AddedIds = Reverse(Stuff(Reverse(@AddedIds), 1, 2, ''));
 
 					-- Update added and deleted values
 					--
@@ -167,7 +167,7 @@ BEGIN
 							FOR XML PATH(''), TYPE
 						).value('.', 'nvarchar(max)') ;
 
-					Select @AddedIds = Reverse(Stuff(Reverse(@AddedIds), 1, 1, ''));
+					Select @AddedIds = Reverse(Stuff(Reverse(@AddedIds), 1, 2, ''));
 
 					-- Update added and deleted values
 					--
@@ -233,7 +233,7 @@ BEGIN
 									FOR XML PATH(''), TYPE
 								).value('.', 'nvarchar(max)') ;
 
-							Select @DeletedIds = Reverse(Stuff(Reverse(@DeletedIds), 1, 1, ''));
+							Select @DeletedIds = Reverse(Stuff(Reverse(@DeletedIds), 1, 2, ''));
 
 							Update @FileTbl
 								Set DeletedReviewIds = @DeletedIds
@@ -272,6 +272,6 @@ Select [@FileTbl].[SchoolId], [Schools].[SchoolName], [@FileTbl].[FileLogId], [F
 From @FileTbl, [dbo].[FileLog], [dbo].[Schools] 
 Where [@FileTbl].[FileLogId] = [FileLog].[FileLogId]
 	AND [@FileTbl].[SchoolId] = [Schools].SchoolId  
-	Order by Id ASC ;
+	Order by  [@FileTbl].[Id] ASC ;
 
 

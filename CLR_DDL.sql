@@ -3,7 +3,7 @@
 -- the dev bootcamp school reviews data
 -- -----------------------------------------------------------------------------------------------
 
-Use [Sabio]
+Use [Outcomes]
 go
 
 -- Enable executon of CLR functions in SQL server
@@ -59,7 +59,6 @@ Go
 Select * from GetFiles('.') where LastWriteTime > '2017-06-01'
 Go
 
-
 -------------
 -- GetReviews
 -------------
@@ -106,7 +105,7 @@ Declare @ReviewHtml nvarchar(MAX);
 Select TOP(1)
     @ReviewHtml = Input.[ReviewsHtml]
 From
-    [Sabio].[dbo].[Input] Input
+	[Outcomes].[dbo].[Input] Input
 
 Select * from GetReviews(@ReviewHtml);
 Go
