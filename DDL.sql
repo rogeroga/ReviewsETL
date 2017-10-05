@@ -71,6 +71,13 @@ Create Table dbo.Stage (
 	CurrentUrl nvarchar(MAX),
 	Error nvarchar(MAX),
 	LoadedReviews int default 0);
+
+Create Nonclustered Index [StageIdx] On dbo.Stage
+(
+	FileLogId Asc
+) with (pad_index = Off, Statistics_norecompute = Off, Sort_in_tempdb = Off, Ignore_dup_key = Off, Drop_existing = Off, Online = Off, Allow_row_locks = On, Allow_page_locks = On) 
+On [primary];
+
 GO
 
 -- ============================================================================
