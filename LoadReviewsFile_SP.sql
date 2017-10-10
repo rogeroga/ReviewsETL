@@ -20,7 +20,8 @@ Go
 -- ----------------------------------------------------------------------------------------
 -- Procedure to load and parse an input file and extract the individual review records
 -- -----------------------------------------------------------------------------------------
-Create Procedure LoadReviewsFile ( @InputFile NVarChar(MAX), @ReceivedTime datetime)
+Create Procedure LoadReviewsFile (@InputFile NVarChar(MAX), 
+								  @ReceivedTime datetime)
 As 
 Begin
 	-- Check if the input filename was already loaded
@@ -183,11 +184,29 @@ Begin
 
 	If @@ERROR <> 0 GoTo ErrorHandler
 
-	-- Set success status to the file just processed
+	-- Set success loading status to the file just processed
 	--
 	Update [dbo].[FileLog] 
 		Set Status = 1 
-		Where FileLogId = @NewFileLogId
+		Where FileLogId = @NewFileLogId ;
+
+	Select @Tmp = Sum(s.LoadedReviews)
+		From dbo.FileLog f, dbo.Stage s 
+		Where f.FileLogId = s.FileLogId
+			and f.FileLogId = @NewFileLogId;
+
+	-- Enable or disable the file based on the review count threshold
+	-- of the first file loaded 5282
+	-- 
+	If (@Tmp < 5124) 
+		Set @Result = 0 
+	Else
+		Set @Result = 1
+
+	Update [dbo].[FileLog] 
+		Set Enabled = @Result
+		Where FileLogId = @NewFileLogId ;
+
 
     Set NoCount OFF
     Return (0)

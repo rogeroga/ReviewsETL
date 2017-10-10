@@ -3,17 +3,16 @@
 -- =======================================================================================
 
 Use [Outcomes]
-Go
+GO
 
--- Truncate tables where the report results would be stored
--- 
-Truncate table ReviewDifferences ;
-Truncate table MissingReviews ;
-Go
-
--- Process all the reviews
+-- Table types
 --
-Declare @FileTbl Table (
+IF type_id('[dbo].[ReviewFileTableType]') IS NOT NULL
+	Drop Type [dbo].[ReviewFileTableType];
+GO
+
+Create Type dbo.ReviewFileTableType As Table
+ (                     
 	Id int not null identity(1,1) primary key,
 	SchoolId int,
 	SchoolName nvarchar(max),
@@ -21,7 +20,86 @@ Declare @FileTbl Table (
 	TotalReviews int,
 	AddedReviewIds nvarchar(max),
 	DeletedReviewIds nvarchar(max)
+ );
+
+IF type_id('[dbo].[ReviewsTableType]') IS NOT NULL
+   Drop Type dbo.ReviewsTableType
+GO
+
+Create Type ReviewsTableType As Table
+(
+	Id int not null identity(1,1) primary key, 
+	ReviewId int
 );
+
+GO
+
+-- ---------------
+-- Drop Function
+-- ---------------
+IF OBJECT_ID('GetList') IS NOT NULL
+   Drop Function dbo.GetList
+GO
+
+Create Function GetList (@Reviews ReviewsTableType READONLY)
+Returns nvarchar(MAX) as 
+Begin
+
+	Declare @Str nvarchar(MAX);
+
+	Select @Str = (
+			Select CAST(ReviewId AS nvarchar) + ', '
+			From @Reviews
+			FOR XML PATH(''), TYPE
+		).value('.', 'nvarchar(max)') ;
+
+	Select @Str = Reverse(Stuff(Reverse(@Str), 1, 2, ''));
+
+	Return @Str ;
+
+End 
+
+GO
+
+-- ---------------
+-- Drop Function
+-- ---------------
+IF OBJECT_ID('GetNextFileId') IS NOT NULL
+   Drop Function dbo.GetNextFileId
+GO
+
+Create Function GetNextFileId (@FileTbl ReviewFileTableType READONLY,
+							   @SchoolId int, 
+							   @StartingFileLogId int)
+Returns int as 
+Begin
+
+	Declare @LoopCounter int, 
+			@MaxId int ;
+
+/*	Select @SchoolId2 = SchoolId,
+			@SchoolName2 = SchoolName,
+			@TotReviews2 = TotalReviews,
+			@FileLog2 = FileLogId
+	From @FileTbl
+	Where Id = @NextId;
+*/
+
+	Return 0;
+End ;
+
+GO
+
+-- Truncate tables where the report results would be stored
+-- 
+Truncate table [dbo].[ReviewDifferences] ;
+Truncate table [dbo].[MissingReviews] ;
+GO
+
+-- Checks all schools 
+--
+Declare @FileTbl As ReviewFileTableType, 
+		@ReviewsTbl As ReviewsTableType;
 
 Declare	@ReviewDifferences Table (
 	SchoolId int,
@@ -31,9 +109,6 @@ Declare	@ReviewDifferences Table (
 	CountSecondFile int) ;
 
 Declare @OutputTbl Table (Id int) ;
-
-Declare @ReviewsTbl Table (Id int not null identity(1,1) primary key, 
-							ReviewId int) ;
 
 Declare @LoopCounter int, 
 	@MaxId int,
@@ -54,12 +129,28 @@ Declare @LoopCounter int,
 
 -- Count all the reviews per file loaded for each school 
 --
-Insert into @FileTbl(SchoolId, SchoolName, FileLogId, TotalReviews)
-	Select Schools.SchoolId, Schools.SchoolName, ReviewsLog.FileLogId, Count(*) TotalReviews 
-	From dbo.ReviewsLog inner join Schools on ReviewsLog.SchoolId = Schools.SchoolId
---		Where Schools.SchoolId = 93 
-		Group by Schools.SchoolId, Schools.SchoolName, ReviewsLog.FileLogId
-		Order by Schools.SchoolId asc, ReviewsLog.FileLogId asc ;
+/*Insert into @FileTbl(SchoolId, SchoolName, FileLogId, TotalReviews)
+	Select s.SchoolId, s.SchoolName, r.FileLogId, Count(r.ReviewId) TotalReviews 
+	From dbo.ReviewsLog r inner join Schools s on r.SchoolId = s.SchoolId
+						  inner join FileLog l on r.FileLogId = l.FileLogId
+		Where l.Enabled = 1
+--
+				AND s.SchoolId = 133
+--
+	Group by s.SchoolId, s.SchoolName, r.FileLogId
+	Order by s.SchoolId asc, r.FileLogId asc ;
+*/
+
+Insert into @FileTbl(SchoolId, FileLogId, TotalReviews)
+	Select r.SchoolId, r.FileLogId, Count(r.ReviewId) TotalReviews 
+	From dbo.ReviewsLog r inner join FileLog l on r.FileLogId = l.FileLogId
+		Where -- l.Enabled = 1 AND
+--
+			r.SchoolId = 133
+--
+	Group by r.SchoolId, r.FileLogId
+	Order by r.SchoolId asc, r.FileLogId asc ;
+
 
 -- Get min and max Ids from the temporary table 
 --
@@ -71,7 +162,7 @@ From @FileTbl ;
 --
 Set @NewSchool = 1;
 
--- Main loop to go through the results captured in the temporary table
+-- Main loop to go through all the results in the results table
 --
 WHILE ( @LoopCounter IS NOT NULL AND @LoopCounter <= @MaxId )
 BEGIN
@@ -83,6 +174,9 @@ BEGIN
 	From @FileTbl
 	Where Id = @LoopCounter;
 
+	-- A new school start? reset flags and 
+	-- get a count of the very first file for such school
+	--
 	If (@NewSchool = 1) 
 		Begin
 			Set @NewSchool = 0;
@@ -101,13 +195,9 @@ BEGIN
 
 			If ( @Tmp > 0 )
 				Begin
-					Select @AddedIds = (
-							Select CAST(ReviewId AS nvarchar) + ', '
-							From @ReviewsTbl
-							FOR XML PATH(''), TYPE
-						).value('.', 'nvarchar(max)') ;
-
-					Select @AddedIds = Reverse(Stuff(Reverse(@AddedIds), 1, 2, ''));
+					-- Get a comma separated list of ReviewIds
+					--
+					Select @AddedIds = [dbo].[GetList](@ReviewsTbl);
 
 					-- Update added and deleted values
 					--
@@ -130,7 +220,7 @@ BEGIN
 
 	-- Do an analysis of the the reviews for each school, making sure that they are in an ascending fashion  
 	--
-	WHILE ( @SchoolName2 IS NOT NULL 
+	WHILE ( @SchoolId2 IS NOT NULL 
 				AND @NextId <= @MaxId 
 					AND @SchoolId1 = @SchoolId2 
 						AND @TotReviews1 <= @TotReviews2 )
@@ -161,13 +251,7 @@ BEGIN
 				Begin
 					-- Get a comma separated list of ReviewIds
 					--
-					Select @AddedIds = (
-							Select CAST(ReviewId AS nvarchar) + ', '
-							From @ReviewsTbl
-							FOR XML PATH(''), TYPE
-						).value('.', 'nvarchar(max)') ;
-
-					Select @AddedIds = Reverse(Stuff(Reverse(@AddedIds), 1, 2, ''));
+					Select @AddedIds = [dbo].[GetList](@ReviewsTbl);
 
 					-- Update added and deleted values
 					--
@@ -191,7 +275,7 @@ BEGIN
 			From @FileTbl
 			Where Id = @NextId;
 
-		END
+		END  -- While loop to compare results for the same school
 
 	Set @LoopCounter = @NextId;
 
@@ -226,14 +310,9 @@ BEGIN
 
 					If ( @Tmp > 0 )
 						Begin
-
-							Select @DeletedIds = (
-									Select CAST(ReviewId AS nvarchar) + ', '
-									From @ReviewsTbl
-									FOR XML PATH(''), TYPE
-								).value('.', 'nvarchar(max)') ;
-
-							Select @DeletedIds = Reverse(Stuff(Reverse(@DeletedIds), 1, 2, ''));
+							-- Get a comma separated list of ReviewIds
+							--
+							Select @DeletedIds = [dbo].[GetList](@ReviewsTbl);
 
 							Update @FileTbl
 								Set DeletedReviewIds = @DeletedIds
@@ -274,4 +353,5 @@ Where [@FileTbl].[FileLogId] = [FileLog].[FileLogId]
 	AND [@FileTbl].[SchoolId] = [Schools].SchoolId  
 	Order by  [@FileTbl].[Id] ASC ;
 
+GO
 

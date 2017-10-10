@@ -48,7 +48,8 @@ Create Table dbo.FileLog (
 	FileName nvarchar(MAX) not null,
 	ProcessedDate DateTime not null,
 	ReceivedTime DateTime not null,
-	Status int );
+	Status int not null default 0,
+	Enabled int not null default 0);
 GO
 
 -- ============================================================================
