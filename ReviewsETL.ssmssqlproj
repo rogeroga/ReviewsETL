@@ -49,6 +49,12 @@
           <AssociatedConnUserName />
           <FullPath>DifferencesReport.sql</FullPath>
         </FileNode>
+        <FileNode Name="Functions_DDL.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ROGELIO-PC:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ROGELIO-PC</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Functions_DDL.sql</FullPath>
+        </FileNode>
         <FileNode Name="LoadReviewsFile_SP.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ROGELIO-PC:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>ROGELIO-PC</AssociatedConnSrvName>
@@ -78,6 +84,12 @@
           <AssociatedConnSrvName>ROGELIO-PC</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>SQLQuery2.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableTypes_DDL.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ROGELIO-PC:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ROGELIO-PC</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableTypes_DDL.sql</FullPath>
         </FileNode>
       </Items>
     </LogicalFolder>
