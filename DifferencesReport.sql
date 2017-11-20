@@ -51,9 +51,9 @@ Insert into @FileTbl(SchoolId, FileLogId, TotalReviews)
 			l.Enabled = 1
 --
 --			'Sabio'
---			AND r.SchoolId = 19
+			AND r.SchoolId = 133
 --
-			AND l.ReceivedTime BETWEEN DATEADD(WEEK,-8,GETDATE()) AND GETDATE()
+			AND l.ReceivedTime BETWEEN DATEADD(MONTH,-9,GETDATE()) AND GETDATE()
 -- 
 
 	Group by r.SchoolId, r.FileLogId
@@ -238,12 +238,12 @@ BEGIN
 
  					Insert into MissingReviews (DifferenceId, SchoolId, ReviewId, Review, RateCurriculum, RateInstructors, RateJobAssistance, RateOverallExperience)
  						Select @DiffId, @SchoolId1, ReviewsLog.ReviewId, ReviewsLog.Review, ReviewsLog.RateCurriculum, ReviewsLog.RateInstructors, ReviewsLog.RateJobAssistance, ReviewsLog.RateOverallExperience
- 							From dbo.ReviewsLog inner join Schools on ReviewsLog.SchoolId = Schools.SchoolId
- 							Where Schools.SchoolName = @SchoolName1 AND ReviewsLog.FileLogId = @FileLog1
+ 							From dbo.ReviewsLog
+ 							Where ReviewsLog.FileLogId = @FileLog1 AND ReviewsLog.SchoolId = @SchoolId1
  								AND ReviewsLog.ReviewId NOT IN (
- 									Select ReviewsLog.ReviewId
- 										From dbo.ReviewsLog inner join Schools on ReviewsLog.SchoolId = Schools.SchoolId
- 										Where Schools.SchoolName = @SchoolName1 AND ReviewsLog.FileLogId = @FileLog2
+ 										Select ReviewId
+ 										From dbo.ReviewsLog
+ 										Where FileLogId = @FileLog2 AND SchoolId = @SchoolId2
  								);
 
 				End
