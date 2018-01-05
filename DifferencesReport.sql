@@ -5,6 +5,11 @@
 Use [Outcomes]
 GO
 
+SET NOCOUNT ON
+SET ANSI_NULLS ON
+SET QUOTED_IDENTIFIER ON
+GO
+
 -- Table types
 --
 IF type_id('[dbo].[ReviewFileTableType]') IS NOT NULL
@@ -144,9 +149,10 @@ Declare @LoopCounter int,
 Insert into @FileTbl(SchoolId, FileLogId, TotalReviews)
 	Select r.SchoolId, r.FileLogId, Count(r.ReviewId) TotalReviews 
 	From dbo.ReviewsLog r inner join FileLog l on r.FileLogId = l.FileLogId
-		Where -- l.Enabled = 1 AND
---
-			r.SchoolId = 133
+		Where 
+			l.Enabled = 1
+--`
+--			AND r.SchoolId = 133
 --
 	Group by r.SchoolId, r.FileLogId
 	Order by r.SchoolId asc, r.FileLogId asc ;
@@ -331,11 +337,11 @@ BEGIN
  					Insert into MissingReviews (DifferenceId, SchoolId, ReviewId, Review, RateCurriculum, RateInstructors, RateJobAssistance, RateOverallExperience)
  						Select @DiffId, @SchoolId1, ReviewsLog.ReviewId, ReviewsLog.Review, ReviewsLog.RateCurriculum, ReviewsLog.RateInstructors, ReviewsLog.RateJobAssistance, ReviewsLog.RateOverallExperience
  							From dbo.ReviewsLog inner join Schools on ReviewsLog.SchoolId = Schools.SchoolId
- 							Where Schools.SchoolName = @SchoolName1 AND ReviewsLog.FileLogId = @FileLog1
+ 							Where Schools.SchoolId = @SchoolId1 AND ReviewsLog.FileLogId = @FileLog1
  								AND ReviewsLog.ReviewId NOT IN (
  									Select ReviewsLog.ReviewId
  										From dbo.ReviewsLog inner join Schools on ReviewsLog.SchoolId = Schools.SchoolId
- 										Where Schools.SchoolName = @SchoolName1 AND ReviewsLog.FileLogId = @FileLog2
+ 										Where Schools.SchoolId = @SchoolId2 AND ReviewsLog.FileLogId = @FileLog2
  								);
 
 				End
