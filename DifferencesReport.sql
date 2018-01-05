@@ -134,26 +134,17 @@ Declare @LoopCounter int,
 
 -- Count all the reviews per file loaded for each school 
 --
-/*Insert into @FileTbl(SchoolId, SchoolName, FileLogId, TotalReviews)
-	Select s.SchoolId, s.SchoolName, r.FileLogId, Count(r.ReviewId) TotalReviews 
-	From dbo.ReviewsLog r inner join Schools s on r.SchoolId = s.SchoolId
-						  inner join FileLog l on r.FileLogId = l.FileLogId
-		Where l.Enabled = 1
---
-				AND s.SchoolId = 133
---
-	Group by s.SchoolId, s.SchoolName, r.FileLogId
-	Order by s.SchoolId asc, r.FileLogId asc ;
-*/
-
 Insert into @FileTbl(SchoolId, FileLogId, TotalReviews)
 	Select r.SchoolId, r.FileLogId, Count(r.ReviewId) TotalReviews 
 	From dbo.ReviewsLog r inner join FileLog l on r.FileLogId = l.FileLogId
 		Where 
 			l.Enabled = 1
---`
+--
 --			AND r.SchoolId = 133
 --
+			AND l.ReceivedTime BETWEEN DATEADD(MONTH,-9,GETDATE()) AND GETDATE()
+-- 
+
 	Group by r.SchoolId, r.FileLogId
 	Order by r.SchoolId asc, r.FileLogId asc ;
 
@@ -336,12 +327,12 @@ BEGIN
 
  					Insert into MissingReviews (DifferenceId, SchoolId, ReviewId, Review, RateCurriculum, RateInstructors, RateJobAssistance, RateOverallExperience)
  						Select @DiffId, @SchoolId1, ReviewsLog.ReviewId, ReviewsLog.Review, ReviewsLog.RateCurriculum, ReviewsLog.RateInstructors, ReviewsLog.RateJobAssistance, ReviewsLog.RateOverallExperience
- 							From dbo.ReviewsLog inner join Schools on ReviewsLog.SchoolId = Schools.SchoolId
- 							Where Schools.SchoolId = @SchoolId1 AND ReviewsLog.FileLogId = @FileLog1
+ 							From dbo.ReviewsLog
+ 							Where ReviewsLog.FileLogId = @FileLog1 AND ReviewsLog.SchoolId = @SchoolId1
  								AND ReviewsLog.ReviewId NOT IN (
- 									Select ReviewsLog.ReviewId
- 										From dbo.ReviewsLog inner join Schools on ReviewsLog.SchoolId = Schools.SchoolId
- 										Where Schools.SchoolId = @SchoolId2 AND ReviewsLog.FileLogId = @FileLog2
+ 										Select ReviewId
+ 										From dbo.ReviewsLog
+ 										Where FileLogId = @FileLog2 AND SchoolId = @SchoolId2
  								);
 
 				End

@@ -3,14 +3,26 @@
   <Items>
     <LogicalFolder Name="Connections" Type="2" Sorted="true">
       <Items>
-        <ConnectionNode Name="ROGELIO-PC:ROGELIO-PC\roble">
-          <Created>2017-08-28T20:42:43.4782098-07:00</Created>
+        <ConnectionNode Name="ROGELIO-PC:sabiodata08\DBDeveloper">
+          <Created>2017-08-29T03:42:43.4782098+00:00</Created>
           <Type>SQL</Type>
           <Server>ROGELIO-PC</Server>
           <UserName />
           <Authentication>Windows Authentication</Authentication>
           <InitialDB />
           <LoginTimeout>30</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName />
+        </ConnectionNode>
+        <ConnectionNode Name="sabiodata08:sabiodata08\DBDeveloper">
+          <Created>2018-01-04T03:03:02.7721323+00:00</Created>
+          <Type>SQL</Type>
+          <Server>sabiodata08</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>15</LoginTimeout>
           <ExecutionTimeout>0</ExecutionTimeout>
           <ConnectionProtocol>NotSpecified</ConnectionProtocol>
           <ApplicationName />
@@ -44,8 +56,8 @@
           <FullPath>DDLTests.sql</FullPath>
         </FileNode>
         <FileNode Name="DifferencesReport.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ROGELIO-PC:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ROGELIO-PC</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:sabiodata08:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>sabiodata08</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>DifferencesReport.sql</FullPath>
         </FileNode>
@@ -62,10 +74,16 @@
           <FullPath>LoadTests.sql</FullPath>
         </FileNode>
         <FileNode Name="ScheduledJob.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ROGELIO-PC:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ROGELIO-PC</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:sabiodata08:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>sabiodata08</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>ScheduledJob.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SQLQuery1.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:sabiodata08:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>sabiodata08</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery1.sql</FullPath>
         </FileNode>
         <FileNode Name="SQLQuery13.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ROGELIO-PC:True</AssociatedConnectionMoniker>
@@ -78,6 +96,18 @@
           <AssociatedConnSrvName>ROGELIO-PC</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>SQLQuery2.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SQLQuery3.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:sabiodata08:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>sabiodata08</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery3.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SQLQuery4.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:sabiodata08:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>sabiodata08</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery4.sql</FullPath>
         </FileNode>
       </Items>
     </LogicalFolder>
