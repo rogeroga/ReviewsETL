@@ -5,6 +5,9 @@
 Use [Outcomes]
 Go
 
+SET NOCOUNT ON
+GO
+
 Declare @FileTbl Table (Id int not null identity(1,1) primary key,
 	Name nvarchar(MAX) not null,
 	CreationTime DateTime not null,
