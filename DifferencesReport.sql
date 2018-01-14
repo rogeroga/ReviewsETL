@@ -55,11 +55,10 @@ Insert into @FileTbl(SchoolId, FileLogId, TotalReviews)
 		Where 
 			l.Enabled = 1
 --
---			AND r.SchoolId = 133
+--			AND r.SchoolId = 133		-- Coding Bootcamp Praha
+--			AND r.SchoolId = 48			-- Codesmith
 --
 			AND l.ReceivedTime BETWEEN DATEADD(MONTH,-12,GETDATE()) AND GETDATE()
--- 
-
 	Group by r.SchoolId, r.FileLogId
 	Order by r.SchoolId asc, r.FileLogId asc ;
 
@@ -258,8 +257,13 @@ END  -- Main Loop
 
 -- Print results
 -- 
-Select [@FileTbl].[SchoolId], [Schools].[SchoolName], [@FileTbl].[FileLogId], [FileLog].[ReceivedTime], 
-		[@FileTbl].[TotalReviews], [@FileTbl].[AddedReviewIds], [@FileTbl].[DeletedReviewIds]
+Select [@FileTbl].[SchoolId] as 'School Id', 
+	   [Schools].[SchoolName] as 'School Name', 
+	   [@FileTbl].[FileLogId] as 'File Log Id', 
+	   [FileLog].[ReceivedTime] as 'File Received Time', 
+	   [@FileTbl].[TotalReviews] as 'Review Counts In File', 
+	   [@FileTbl].[AddedReviewIds] as 'Addedd Review Ids (Detail)' , 
+	   [@FileTbl].[DeletedReviewIds] as 'Deleted Review Ids (Detail)'
 From @FileTbl, [dbo].[FileLog], [dbo].[Schools] 
 Where [@FileTbl].[FileLogId] = [FileLog].[FileLogId]
 	AND [@FileTbl].[SchoolId] = [Schools].SchoolId  
